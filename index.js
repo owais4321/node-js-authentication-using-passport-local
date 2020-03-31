@@ -5,6 +5,11 @@ const PORT = process.env.PORT || 3000;
 const mongoose = require("mongoose");
 const flash = require("connect-flash");
 const session = require("express-session");
+const passport =require("passport");
+
+//passport config
+require("./config/passport")(passport);
+
 //db connection
 var db = require("./config/keys").MongoURI;
 mongoose
@@ -23,7 +28,8 @@ app.use(
     saveUninitialized: true
   })
 );
-
+app.use(passport.initialize());
+app.use(passport.session());
 //connec-flash
 app.use(flash());
 
@@ -31,6 +37,7 @@ app.use(flash());
 app.use((req, res, next) => {
   res.locals.success_msg = req.flash("success_msg");
   res.locals.error_msg = req.flash("error_msg");
+  res.locals.error = req.flash("error");
   next();
 });
 
