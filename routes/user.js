@@ -2,11 +2,12 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const passport=require('passport');
 const router = express.Router();
+const { forwardAuthenticated } =require("../config/auth");
 const User = require("../models/User");
 //register page
-router.get("/register", (req, res) => res.render("registration"));
+router.get("/register",forwardAuthenticated, (req, res) => res.render("registration"));
 //login page
-router.get("/login", (req, res) => res.render("login"));
+router.get("/login",forwardAuthenticated ,(req, res) => res.render("login"));
 //register handle
 router.post("/register", (req, res) => {
   const { name, email, password, password2 } = req.body;
@@ -78,4 +79,12 @@ passport.authenticate('local',{
   failureFlash:true,
 })(req,res,next);
 });
+
+//logout handler
+router.get('/logout',(req,res)=>{
+  req.logout();
+  req.flash("success_msg","You're successfully logged out");
+  res.redirect("/user/login");
+});
+
 module.exports = router;
