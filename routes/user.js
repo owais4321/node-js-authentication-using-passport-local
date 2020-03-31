@@ -10,21 +10,24 @@ router.get("/register",forwardAuthenticated, (req, res) => res.render("registrat
 router.get("/login",forwardAuthenticated ,(req, res) => res.render("login"));
 //register handle
 router.post("/register", (req, res) => {
+  //validations
   const { name, email, password, password2 } = req.body;
   errors = [];
+  //validation for checking empty
   if (!name || !email || !password || !password2) {
     errors.push({ msg: "please fill all the fields" });
   }
+  //check if password and confirm password are same
   if (password != password2) {
     errors.push({ msg: "Password don't match" });
   }
-  console.log(password.length);
+  //check if length of password is equal or greater then 6
   if (password.length < 6) {
     errors.push({ msg: "password must be more then 6 digit" });
   }
-
+  //check if there are errors
   if (errors.length > 0) {
-    console.log(errors);
+    //show registration page with errors and field values
     res.render("registration", {
       errors,
       name,
@@ -33,8 +36,9 @@ router.post("/register", (req, res) => {
       password2
     });
   } else {
-    //validation is passed
+    //validation is passed find if user already exists
     User.findOne({ email: email }).then(user => {
+      //if user already exists
       if (user) {
         errors.push({ msg: "user already existed" });
         res.render("registration", {
@@ -44,22 +48,27 @@ router.post("/register", (req, res) => {
           password,
           password2
         });
+        //if user doesn't exists
       } else {
+        //create new user
         const newuser = new User({
           name,
           email,
           password
         });
-        console.log("else route ");
+        //encrypt password
         bcrypt.genSalt(10, (err, salt) =>
           bcrypt.hash(newuser.password, salt, (err, hash) => {
             if (err) console.log(err);
+            //set encrypted password
             newuser.password = hash;
             console.log(newuser);
             newuser
+            //save user
               .save()
               .then(user => {
-                req.flash("success_msg", "You are successfully login");
+                //set flash message for success registration
+                req.flash("success_msg", "You are successfully Registered");
                 res.redirect("/user/login");
               })
               .catch(err => console.log(err));
@@ -72,7 +81,7 @@ router.post("/register", (req, res) => {
 
 //login handle
 router.post('/login',(req,res,next)=>{
-
+//using passport to authenticate user
 passport.authenticate('local',{
   successRedirect:'/dashboard',
   failureRedirect:'/user/login',

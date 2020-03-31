@@ -1,3 +1,4 @@
+//required imports
 const express = require("express");
 const app = express();
 const ejslayout = require("express-ejs-layouts");
